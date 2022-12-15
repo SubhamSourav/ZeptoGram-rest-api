@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import CustomError from "../utils/CustomError.js";
 
 /* READ */
 export const getUser = async (req, res) => {
@@ -7,7 +8,7 @@ export const getUser = async (req, res) => {
     const user = await User.findById(id);
     res.status(200).json(user);
   } catch (err) {
-    res.status(404).json({ message: err.message });
+    return next(new CustomError(err.message), 404);
   }
 };
 
@@ -26,7 +27,7 @@ export const getUserFriends = async (req, res) => {
     );
     res.status(200).json(formattedFriends);
   } catch (err) {
-    res.status(404).json({ message: err.message });
+    return next(new CustomError(err.message), 404);
   }
 };
 
@@ -57,7 +58,7 @@ export const addRemoveFriend = async (req, res) => {
     );
 
     res.status(200).json(formattedFriends);
-  } catch (err) {
-    res.status(404).json({ message: err.message });
+  } catch (error) {
+    return next(new CustomError(error.message), 404);
   }
 };

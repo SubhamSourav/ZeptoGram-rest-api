@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import multer from "multer";
 import helmet from "helmet";
 import morgan from "morgan";
+import cookieParser from "cookie-parser";
 import path from "path";
 import { fileURLToPath } from "url";
 import authRoutes from "./routes/auth.js";
@@ -38,6 +39,8 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage });
+
+app.use(cookieParser());
 
 /* ROUTES WITH FILES */
 app.post("/auth/register", upload.single("picture"), register);
