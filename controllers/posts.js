@@ -5,7 +5,8 @@ import CustomError from "../utils/CustomError.js";
 /* CREATE */
 export const createPost = async (req, res) => {
   try {
-    const { userId, description, picturePath } = req.body;
+    const { description, picturePath } = req.body;
+    const userId = req.user.id;
     const user = await User.findById(userId);
     const newPost = new Post({
       userId,
@@ -39,7 +40,7 @@ export const getFeedPosts = async (req, res) => {
 
 export const getUserPosts = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user.id;
     const post = await Post.find({ userId });
     res.status(200).json(post);
   } catch (err) {
@@ -51,7 +52,7 @@ export const getUserPosts = async (req, res) => {
 export const likePost = async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId } = req.body;
+    const userId = req.user.id;
     const post = await Post.findById(id);
     const isLiked = post.likes.get(userId);
 

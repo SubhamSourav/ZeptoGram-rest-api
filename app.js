@@ -51,4 +51,7 @@ app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
 
+// api/friends/ - GET [List of friends (filter(user: logged_in user))]
+// api/friends/user_id/ - POST [List of friends (filter(user: logged_in user, friend =userd ))]
+
 export default app;
