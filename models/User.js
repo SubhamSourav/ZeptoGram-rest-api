@@ -27,14 +27,18 @@ const UserSchema = new mongoose.Schema(
       required: true,
       min: 5,
     },
-    picturePath: {
-      type: String,
-      default: "",
+    photo: {
+      id: {
+        type: String,
+        required: true,
+      },
+      secure_url: {
+        type: String,
+        required: true,
+      },
     },
     location: String,
     occupation: String,
-    viewedProfile: Number,
-    impressions: Number,
   },
   { timestamps: true }
 );

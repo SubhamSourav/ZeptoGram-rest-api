@@ -1,22 +1,30 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import cookieToken from "../utils/cookieToken.js";
 import CustomError from "../utils/CustomError.js";
+import cloudinary from "cloudinary";
 
 /* REGISTER USER */
-export const register = async (req, res) => {
+export const register = async (req, res, next) => {
+  if (!req.files) {
+    return next(new CustomError("Photo is required for signup", 400));
+  }
+
+  console.log(req.files);
+
+  let file = req.files;
+  const result = await cloudinary.v2.uploader.upload(
+    file.picture.tempFilePath,
+    {
+      folder: "SocialMediaUsers",
+      width: 150,
+      crop: "scale",
+    }
+  );
+
   try {
-    const {
-      firstName,
-      lastName,
-      email,
-      password,
-      picturePath,
-      friends,
-      location,
-      occupation,
-    } = req.body;
+    const { firstName, lastName, email, password, location, occupation } =
+      req.body;
 
     const user = await User.findOne({ email: email });
 
@@ -30,18 +38,19 @@ export const register = async (req, res) => {
       lastName,
       email,
       password: passwordHash,
-      picturePath,
-      friends,
       location,
       occupation,
-      viewedProfile: Math.floor(Math.random() * 10000),
-      impressions: Math.floor(Math.random() * 10000),
+      photo: {
+        id: result.public_id,
+        secure_url: result.secure_url,
+      },
     });
     const savedUser = await newUser.save();
-    console.log(savedUser);
+    // console.log(savedUser);
     return res.status(201).json(savedUser);
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
+  } catch (error) {
+    await cloudinary.v2.uploader.destroy(result.public_id);
+    return next(new CustomError(error.message, 400));
   }
 };
 

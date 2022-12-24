@@ -16,21 +16,27 @@ export const getUser = async (req, res, next) => {
 export const getUserFriends = async (req, res, next) => {
   try {
     const { id } = req.user;
-    let user = await Friend.find({ user: id });
+    let friends = await Friend.find({ user: id });
 
+    // console.log(friends);
     const friends1 = await Promise.all(
-      user.map((ele) => User.findById(ele.friend))
+      friends.map((ele) => User.findById(ele.friend))
     );
-    user = await Friend.find({ friend: id });
+    friends = await Friend.find({ friend: id });
     const friends2 = await Promise.all(
-      user.map((ele) => User.findById(ele.user))
+      friends.map((ele) => User.findById(ele.user))
     );
 
-    const friends = friends1.concat(friends2);
+    if (friends1[0] === null) friends = friends2;
+    else if (friends2[0] === null) friends = friends1;
+    else {
+      friends = friends1.concat(friends2);
+    }
 
     const formattedFriends = friends.map(
-      ({ _id, firstName, lastName, occupation, location, picturePath }) => {
-        return { _id, firstName, lastName, occupation, location, picturePath };
+      ({ _id, firstName, lastName, occupation, location, photo }) => {
+        const PicUrl = photo.secure_url;
+        return { _id, firstName, lastName, occupation, location, PicUrl };
       }
     );
     res.status(200).json(formattedFriends);
@@ -56,22 +62,25 @@ export const addRemoveFriend = async (req, res, next) => {
       await Friend.findByIdAndDelete(connection2[0]._id);
     }
 
-    let user = await Friend.find({ user: id });
+    let friends = await Friend.find({ user: id });
 
     const friends1 = await Promise.all(
-      user.map((ele) => User.findById(ele.friend))
+      friends.map((ele) => User.findById(ele.friend))
     );
-
-    user = await Friend.find({ friend: id });
+    friends = await Friend.find({ friend: id });
     const friends2 = await Promise.all(
-      user.map((ele) => User.findById(ele.friend))
+      friends.map((ele) => User.findById(ele.user))
     );
 
-    const friends = friends1.concat(friends2);
-
+    if (friends1[0] === null) friends = friends2;
+    else if (friends2[0] === null) friends = friends1;
+    else {
+      friends = friends1.concat(friends2);
+    }
     const formattedFriends = friends.map(
-      ({ _id, firstName, lastName, occupation, location, picturePath }) => {
-        return { _id, firstName, lastName, occupation, location, picturePath };
+      ({ _id, firstName, lastName, occupation, location, photo }) => {
+        const PicUrl = photo.secure_url;
+        return { _id, firstName, lastName, occupation, location, PicUrl };
       }
     );
     res.status(200).json(formattedFriends);

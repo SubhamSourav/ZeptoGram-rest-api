@@ -1,11 +1,24 @@
 import Post from "../models/Post.js";
 import User from "../models/User.js";
 import CustomError from "../utils/CustomError.js";
+import cloudinary from "cloudinary";
 
 /* CREATE */
-export const createPost = async (req, res) => {
+export const createPost = async (req, res, next) => {
+  if (!req.files) {
+    return next(new CustomError("Photo Not Present", 400));
+  }
+
+  let file = req.files;
+  const result = await cloudinary.v2.uploader.upload(
+    file.picture.tempFilePath,
+    {
+      folder: "Posts",
+    }
+  );
+
   try {
-    const { description, picturePath } = req.body;
+    const { description } = req.body;
     const userId = req.user.id;
     const user = await User.findById(userId);
     const newPost = new Post({
@@ -14,10 +27,12 @@ export const createPost = async (req, res) => {
       lastName: user.lastName,
       location: user.location,
       description,
-      userPicturePath: user.picturePath,
-      picturePath,
+      userPicture: user.photo.secure_url,
+      photo: {
+        id: result.public_id,
+        secure_url: result.secure_url,
+      },
       likes: {},
-      comments: [],
     });
     await newPost.save();
 
@@ -29,7 +44,7 @@ export const createPost = async (req, res) => {
 };
 
 /* READ */
-export const getFeedPosts = async (req, res) => {
+export const getFeedPosts = async (req, res, next) => {
   try {
     const post = await Post.find();
     res.status(200).json(post);
@@ -38,7 +53,7 @@ export const getFeedPosts = async (req, res) => {
   }
 };
 
-export const getUserPosts = async (req, res) => {
+export const getUserPosts = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const post = await Post.find({ userId });
@@ -49,7 +64,7 @@ export const getUserPosts = async (req, res) => {
 };
 
 /* UPDATE */
-export const likePost = async (req, res) => {
+export const likePost = async (req, res, next) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;
