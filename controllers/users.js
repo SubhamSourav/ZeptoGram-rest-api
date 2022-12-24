@@ -5,7 +5,7 @@ import CustomError from "../utils/CustomError.js";
 /* READ */
 export const getUser = async (req, res, next) => {
   try {
-    const { id } = req.user;
+    const { id } = req.params;
     const user = await User.findById(id);
     res.status(200).json(user);
   } catch (err) {
@@ -15,7 +15,7 @@ export const getUser = async (req, res, next) => {
 
 export const getUserFriends = async (req, res, next) => {
   try {
-    const { id } = req.user;
+    const { id } = req.params;
     let friends = await Friend.find({ user: id });
 
     // console.log(friends);
